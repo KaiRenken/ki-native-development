@@ -1,0 +1,548 @@
+% =============================================================================
+%  KI-native Softwareentwicklung – Best Practices
+%  Impulse vom Java Forum Nord 2026 (22.09.2026, Hannover)
+%
+%  Kompilieren (zweimal bzw. latexmk):
+%    lualatex praesentation.tex     (empfohlen, nutzt Arial)
+%    xelatex  praesentation.tex
+%    pdflatex praesentation.tex     (Helvetica-Klon statt Arial)
+%
+%  Entwurfsmodus: \todo{...} erscheint magentafarben auf den Folien.
+%  Für die finale Fassung \usetheme[final]{neusta} setzen.
+% =============================================================================
+\documentclass[aspectratio=169,t,11pt]{beamer}
+\usetheme{neusta}
+
+\usepackage[ngerman]{babel}
+\usepackage[autostyle]{csquotes}
+\usepackage{array}
+
+\title{KI-native Softwareentwicklung}
+\subtitle{Best Practices für die KI-unterstützte Entwicklung -- Impulse vom Java Forum Nord 2026}
+\author{K.~Renken}
+\date{\today} % TODO: Datum und Anlass des Vortrags eintragen
+
+\hypersetup{pdftitle={KI-native Softwareentwicklung},pdfauthor={K. Renken, team neusta}}
+
+% Hilfsmakros für einzelne Folien (Makros mit Parametern nicht im Frame definieren)
+\newcommand\who[1]{\hfill{\small\color{neusta@accent}#1}}
+\newcommand\practice[3][\neustacard]{%
+  #1[text width=0.2\textwidth,minimum height=2.1cm]{\Large #2}{\small\bfseries #3}}
+
+\begin{document}
+
+% -----------------------------------------------------------------------------
+\neustatitleframe
+
+\begin{frame}{Agenda}
+  \vspace{4mm}
+  \tableofcontents
+\end{frame}
+
+\neustastatement[Kajetan Mischok, Java Forum Nord 2026]{Coding is dead.\\Softwareentwicklung lebt\\mehr als je zuvor.}
+
+% =============================================================================
+\section{Ausgangslage}
+% =============================================================================
+
+\begin{frame}{Vom Autocomplete zum Agenten}{Wie sich KI-Unterstützung in der Entwicklung verändert hat}
+  \vspace{8mm}
+  \centering
+  \begin{tikzpicture}[x=0.25\textwidth]
+    \draw[neusta@accent,line width=0.7pt] (0.5,0) -- (3.5,0);
+    \node[neusta pill] at (0.5,0) {Autocomplete};
+    \node[neusta pill] at (1.5,0) {Chat};
+    \node[neusta pill] at (2.5,0) {Agenten};
+    \node[neusta pill] at (3.5,0) {Orchestrierung};
+    \begin{scope}[every node/.style={anchor=north,text width=0.21\textwidth,align=center,font=\footnotesize}]
+      \node at (0.5,-0.6) {Vorschläge für Zeilen und Blöcke direkt in der IDE};
+      \node at (1.5,-0.6) {Fragen, Erklärungen, Snippets per Copy \& Paste};
+      \node at (2.5,-0.6) {planen, ändern Dateien, führen Tests aus und iterieren selbstständig};
+      \node at (3.5,-0.6) {mehrere Agenten parallel, Sub-Agenten, Werkzeuge per MCP};
+    \end{scope}
+  \end{tikzpicture}
+
+  \vspace{10mm}
+  \raggedright
+  \neustapill{Claude Code}\ \neustapill{GitHub Copilot}\ \neustapill{Cursor}\ \neustapill{OpenCode}\ \neustapill{JetBrains AI}
+  \todo{Eigene Einordnung: Welche Werkzeuge nutzen wir in neusta-Projekten? Ggf. kurze Umfrage im Publikum.}
+\end{frame}
+
+\begin{frame}{Zwei Perspektiven auf KI in der Java-Welt}
+  \vspace{4mm}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{KI für die Entwicklung}
+        \begin{itemize}
+          \item Assistenten und Agenten im Entwicklungsalltag
+          \item Analyse, Generierung, Tests, Review, Migration
+          \item Auswirkungen auf Rollen, Lernen und Qualität
+        \end{itemize}
+        \medskip
+        \textbf{\(\rightarrow\) Fokus dieses Vortrags}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{KI in der Anwendung}
+        \begin{itemize}
+          \item Spring AI, Quarkus LangChain4j
+          \item MCP-Server in Java, RAG, Vektor-Datenbanken
+          \item Lokale Modelle, z.\,B. mit Ollama
+        \end{itemize}
+        \medskip
+        \textbf{\(\rightarrow\) nur am Rande}
+      \end{block}
+    \end{column}
+  \end{columns}
+  \neustasource{R.~Fichtner, \enquote{Java 2026: So startest du (wieder) richtig durch} (Folien);
+    F.~Hahne, \enquote{Hey Mr.\ TamboU(r)Ine man, create a TUI for me} (Abstract)}
+\end{frame}
+
+% =============================================================================
+\section{Impulse vom Java Forum Nord 2026}
+% =============================================================================
+
+\begin{frame}{KI auf dem Java Forum Nord 2026}{22. September 2026, Medizinische Hochschule Hannover}
+  \vspace{8mm}
+  \centering
+  \neustakpi{37}{Vorträge}\hfill
+  \neustakpi{7}{mit KI als Hauptthema}\hfill
+  \neustakpi{5}{mit KI als Nebenaspekt}\hfill
+  \neustakpi{1}{faktischer KI-Track (Hörsaal F)}
+
+  \vspace{10mm}
+  \raggedright
+  \begin{itemize}
+    \item Im Mittelpunkt standen \alert{Menschen, Kompetenz und Verantwortung}, nicht Werkzeuge.
+    \item Praxisvorträge zu Agenten-Workflows, MCP oder KI-Security gab es kaum.
+  \end{itemize}
+  \neustasource{Programm unter \url{https://javaforumnord.de/2026/programm/} (Sessionize)}
+\end{frame}
+
+\begin{frame}{Die KI-Vorträge im Überblick}{Teil 1: Kompetenz und Lernen}
+  \vspace{4mm}
+  \neustacard[text width=0.205\textwidth,minimum height=4.3cm]{Erfahrung lässt sich nicht prompten}{%
+    \textbf{Nora Schöner}\\Opening Keynote\par\medskip
+    Kompetenz entsteht durch eigene Erfahrung und Austausch -- nicht im Chat mit dem Agenten.}\hfill
+  \neustacard[text width=0.205\textwidth,minimum height=4.3cm]{The Excel Moment}{%
+    \textbf{Gerd Aschemann}\\Software-Architekt\par\medskip
+    LLMs machen Architekt:innen zu Werkzeugbauern: Analyse-Tools für Legacy-Systeme in Stunden statt Wochen.}\hfill
+  \neustacard[text width=0.205\textwidth,minimum height=4.3cm]{Cognitive Debt}{%
+    \textbf{Martin Lippert}\\Broadcom, Spring Tools\par\medskip
+    Wer das Denken an die KI delegiert, verliert die Fähigkeit, Code zu schreiben und zu prüfen.}\hfill
+  \neustacard[text width=0.205\textwidth,minimum height=4.3cm]{Junior Devs im KI-Zeitalter}{%
+    \textbf{Kajetan Mischok}\\Mischok GmbH\par\medskip
+    TDD, CI/CD und Reviews sind der Maßstab für KI-Output. Wer nicht versteht, kann nicht verantworten.}
+\end{frame}
+
+\begin{frame}{Die KI-Vorträge im Überblick}{Teil 2: Rolle, Praxis und kritischer Blick}
+  \vspace{4mm}
+  \neustacard[text width=0.205\textwidth,minimum height=4.3cm]{Beyond Coding}{%
+    \textbf{Sascha Doemer}\\LMIS AG\par\medskip
+    Die Zukunft der Entwicklung liegt im Kontext: Problem verstehen, präzise beschreiben, Ergebnis nachweisen.}\hfill
+  \neustacard[text width=0.205\textwidth,minimum height=4.3cm]{Developing Software Fast and Slow}{%
+    \textbf{Oliver Zeigermann}\\Closing Keynote\par\medskip
+    Vibe Coding für Wegwerf-Prototypen, Produktivcode \enquote{slow} mit guter Architektur.}\hfill
+  \neustacard[text width=0.205\textwidth,minimum height=4.3cm]{\enquote{Wir werden von der KI \dots}}{%
+    \textbf{Jens Schauder}\\Spring Data\par\medskip
+    Bewusst pessimistischer Blick auf die Folgen für Wirtschaft, Gesellschaft und Demokratie.}\hfill
+  \neustaoutlinecard[text width=0.205\textwidth,minimum height=4.3cm]{Am Rande}{%
+    Spring AI \& Quarkus LangChain4j\\\textcolor{neusta@accent}{R.~Fichtner}\par\medskip
+    Java-TUI mit LangChain4j\\\textcolor{neusta@accent}{F.~Hahne}\par\medskip
+    KI-Anti-Patterns im Code Review\\\textcolor{neusta@accent}{M.~Landreh, L.~Eisbach}}
+\end{frame}
+
+\begin{frame}{Cognitive Debt: Was KI mit unseren Köpfen macht}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.3\textwidth}
+      \begin{tikzpicture}[node distance=4mm,every node/.style={neusta pill,font=\footnotesize\bfseries}]
+        \node (a) {Cognitive Offloading};
+        \node[below=of a] (b) {Cognitive Surrender};
+        \node[below=of b] (c) {Comprehension Debt};
+        \node[below=of c,draw=neustaMagenta] (d) {Cognitive Debt};
+        \foreach \u/\v in {a/b,b/c,c/d}
+          \draw[->,neusta@accent,line width=0.7pt] (\u) -- (\v);
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.66\textwidth}
+      \textbf{Studie: neue Bibliothek lernen}\par\smallskip
+      \neustakpi{50\,\%}{Quiz mit KI}\hspace{8mm}\neustakpi{65,5\,\%}{Quiz ohne KI}\par\smallskip
+      {\footnotesize Kaum schneller: 23 statt 24,7 Minuten}\par\medskip
+      \textbf{Entscheidend ist, \emph{wie} man KI nutzt}\par\smallskip
+      \small
+      \neustano\ AI Delegation, Progressive AI Reliance, Iterative AI Debugging\par\smallskip
+      \neustayes\ Generation-Then-Comprehension, Hybrid Code-Explanation, Conceptual Inquiry
+    \end{column}
+  \end{columns}
+  \todo{Zahlen vor dem Vortrag mit der Originalstudie abgleichen.}
+  \neustasource{M.~Lippert, \enquote{Cognitive Debt} (Folien, Speaker Deck), zitiert Anthropic,
+    \enquote{How AI Impacts Skill Formation}, und Addy Osmani (\enquote{Cognitive Surrender})}
+\end{frame}
+
+\begin{frame}{Developing Software Fast and Slow}{Kahnemans zwei Denkmodi -- auch für Menschen und LLMs}
+  \vspace{4mm}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Fast \textendash\ System 1}
+        \begin{itemize}
+          \item Mensch: schnell, intuitiv, erfahrungsbasiert
+          \item LLM: direkte Fortführung des Kontexts
+          \item Vibe Coding als PoC: herausfinden, was die Leute wirklich wollen
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Slow \textendash\ System 2}
+        \begin{itemize}
+          \item Mensch: langsam, analytisch
+          \item LLM: Reasoning, agentische Loop, Tool-Calls
+          \item Produktivcode mit guter Architektur und den Erkenntnissen aus dem PoC neu bauen
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+  \vspace{5mm}
+  \centering
+  \enquote{AI kann für nichts Produktives die Verantwortung übernehmen.}\par\smallskip
+  {\small\color{neusta@accent}Deshalb: PoC nach Abschluss in den Müll.}
+  \neustasource{O.~Zeigermann, \enquote{Developing Software Fast and Slow}, Closing Keynote (Folien)}
+\end{frame}
+
+\begin{frame}{Die Zukunft liegt im Kontext}
+  \vspace{14mm}
+  \hspace{8mm}\neustaquote{Die Zukunft der Entwicklung gehört nicht denen, die nur schneller Code
+    produzieren. Sie gehört denen, die bessere Fragen stellen, bessere Kontexte liefern, bessere
+    Entscheidungen treffen -- und beweisen können, dass das Ergebnis wirklich funktioniert.}%
+    {Sascha Doemer, \enquote{Beyond Coding} (Abstract)}
+\end{frame}
+
+\begin{frame}{Der gemeinsame Nenner}
+  \vspace{3mm}
+  \begin{itemize}
+    \setlength\itemsep{2mm}
+    \item[\neustayes] Verantwortung bleibt beim Menschen \who{Mischok, Zeigermann}
+    \item[\neustayes] Kompetenz entsteht durch eigenes Denken und Austausch \who{Schöner, Lippert}
+    \item[\neustayes] Kontext und Spezifikation werden zur Kernkompetenz \who{Doemer}
+    \item[\neustayes] Engineering-Grundlagen sind der Maßstab \who{Mischok, Landreh/Eisbach}
+    \item[\neustayes] Prototyp und Produkt sauber trennen \who{Zeigermann}
+    \item[\neustayes] LLMs als Werkzeugbauer nutzen \who{Aschemann}
+  \end{itemize}
+
+  \vspace{5mm}
+  \alert{Lücke:} Konkrete Agenten-Praxis, Security und Governance \(\rightarrow\) ergänzen wir im nächsten Teil.
+\end{frame}
+
+% =============================================================================
+\section{Best Practices}
+% =============================================================================
+
+\begin{frame}{Acht Praktiken im Überblick}
+  \vspace{3mm}
+  \practice{01}{Kontext ist das neue Coding}\hfill
+  \practice{02}{Tests und Pipeline als Leitplanken}\hfill
+  \practice{03}{Kleine Schritte, echte Reviews}\hfill
+  \practice{04}{Fast für Prototypen, slow für Produkte}\par\vspace{4mm}
+  \practice{05}{Denken nicht delegieren}\hfill
+  \practice{06}{KI als Werkzeugbauer}\hfill
+  \practice[\neustaoutlinecard]{07}{Agenten gezielt einsetzen}\hfill
+  \practice[\neustaoutlinecard]{08}{Sicher und souverän arbeiten}
+  \vfill
+  {\footnotesize Gefüllt: abgeleitet aus den JFN-Vorträgen \quad Umrandet: ergänzt um aktuelle Praxis}
+  \vspace{2mm}
+\end{frame}
+
+\begin{frame}{01 · Kontext ist das neue Coding}{Ergebnisse sind nur so gut wie der Kontext, den wir liefern}
+  \vspace{3mm}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.36\textwidth}
+      \textbf{Warum?}\par\smallskip\small
+      Agenten kennen weder Fachlichkeit noch Architektur noch Teamkonventionen.
+      LLMs tun sich schwer zu erkennen, was wichtig ist und wann sie nachfragen sollten.
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \textbf{Konkret}
+      \begin{itemize}
+        \item Projektwissen versionieren: \texttt{AGENTS.md} / \texttt{CLAUDE.md} mit Build-Befehlen, Konventionen und No-Gos
+        \item Architekturentscheidungen (ADRs) und Fachbegriffe auffindbar machen
+        \item Erst Plan und Spezifikation mit Akzeptanzkriterien, dann Umsetzung
+        \item Kontext kuratieren statt fluten
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \todo{Beispiel einer AGENTS.md aus einem neusta-Projekt zeigen.}
+  \neustasource{S.~Doemer (Abstract), O.~Zeigermann (Folien); konkrete Praktiken ergänzt}
+\end{frame}
+
+\begin{frame}{02 · Tests und Pipeline als Leitplanken}{Agenten iterieren gut gegen ein klares, automatisch prüfbares Ziel}
+  \vspace{3mm}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.36\textwidth}
+      \textbf{Warum?}\par\smallskip\small
+      TDD, CI/CD und Code Reviews sind \enquote{Maßstab für das, was die KI liefert}.
+      Ohne automatisches Feedback skaliert nur die Menge, nicht die Qualität.
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \textbf{Konkret}
+      \begin{itemize}
+        \item Test zuerst -- selbst geschrieben oder bewusst geprüft
+        \item Agent führt Build, Tests und Linter selbst aus
+        \item Architekturregeln automatisieren, z.\,B. mit ArchUnit
+        \item KI-generierte Tests prüfen: Testen sie Verhalten oder nur die Implementierung?
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \neustasource{K.~Mischok (Abstract), M.~Landreh/L.~Eisbach (Handout); ArchUnit ergänzt}
+\end{frame}
+
+\begin{frame}{03 · Kleine Schritte, echte Reviews}{Anti-Patterns und Gegenmittel im Review von KI-Code}
+  \vspace{5mm}
+  \renewcommand\arraystretch{1.6}
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.5\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}@{}}
+    \textbf{Anti-Pattern} & \textbf{Gegenmittel} \\
+    \neustano\ Kontrollverlust über generierten Code & \neustayes\ Assistiertes Coding: der Mensch steuert \\
+    \neustano\ Blindes Vertrauen in KI-generierte Tests & \neustayes\ Tests überprüfen \\
+    \neustano\ Masse statt Klasse & \neustayes\ Kleine Pull Requests \\
+    \neustano\ Lastverschiebung statt Liefereffizienz & \neustayes\ Fokus auf Anforderungen \\
+  \end{tabular}
+
+  \vspace{4mm}
+  Wer committet, verantwortet -- auch generierten Code.
+  \neustasource{M.~Landreh, L.~Eisbach, \enquote{Code Reviews -- Wie man es so richtig falsch macht} (Handout); Zuordnung sinngemäß}
+\end{frame}
+
+\begin{frame}{04 · Fast für Prototypen, slow für Produkte}
+  \vspace{4mm}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Fast: Vibe Coding}
+        \begin{itemize}
+          \item Anforderungen klären, Ideen in Stunden testen
+          \item Feedback von Nutzer:innen einholen
+          \item Code bewusst als Wegwerfprodukt kennzeichnen
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Slow: Produktentwicklung}
+        \begin{itemize}
+          \item Architektur, Spezifikation, Tests, Review
+          \item KI als Werkzeug, der Mensch entscheidet
+          \item Neu bauen statt Prototyp \enquote{hochschieben}
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+  \todo{Beispiel: PoC aus einem Kundenprojekt, der bewusst neu gebaut wurde.}
+  \neustasource{O.~Zeigermann, \enquote{Developing Software Fast and Slow} (Folien)}
+\end{frame}
+
+\begin{frame}{05 · Denken nicht delegieren}{Lernmodus statt Delegationsmodus}
+  \vspace{3mm}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \textbf{Fördert Verständnis} \neustayes
+      \begin{itemize}
+        \item Erst selbst lösen oder skizzieren, dann mit der KI vergleichen
+        \item Generierten Code erklären lassen und nachvollziehen
+        \item Konzeptfragen statt fertiger Lösungen
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{Baut Cognitive Debt auf} \neustano
+      \begin{itemize}
+        \item Komplette Aufgaben delegieren
+        \item Schleichend wachsende Abhängigkeit
+        \item Fehler nur per KI \enquote{wegdebuggen}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \vspace{4mm}
+  Erfahrung entsteht durch Tun -- und vertieft sich im Austausch: Pairing, Reviews, Community.
+  \neustasource{M.~Lippert, \enquote{Cognitive Debt} (Folien); N.~Schöner, \enquote{Erfahrung lässt sich nicht prompten} (Abstract)}
+\end{frame}
+
+\begin{frame}{06 · KI als Werkzeugbauer}{\enquote{Was vor wenigen Jahren ein Wochenprojekt war, entsteht heute in Stunden.}}
+  \vspace{3mm}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \textbf{Idee}
+      \begin{itemize}
+        \item Static Analyzer beantworten nicht, \emph{warum} ein System so gebaut ist
+        \item Antworten stecken in Tickets, Wikis, Mailinglisten und Build-Skripten
+        \item Der Coding-Assistent baut die fehlenden Analyse-\enquote{Sensoren}
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{Anwendung}
+      \begin{itemize}
+        \item Eine abfragbare Sicht auf Code, Build-Metadaten, Tickets und Fachdoku
+        \item Abgleich mit der Ubiquitous Language
+        \item Migrationen vorbereiten, z.\,B. mit OpenRewrite-Rezepten
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \todo{Legacy-Beispiel aus einem neusta-Projekt ergänzen.}
+  \neustasource{G.~Aschemann, \enquote{The Excel Moment} (Abstract); OpenRewrite nach R.~Fichtner (Folien)}
+\end{frame}
+
+\begin{frame}{07 · Agenten gezielt einsetzen}{Ergänzung -- auf dem JFN nur am Rande Thema}
+  \vspace{3mm}
+  \begin{itemize}
+    \setlength\itemsep{1.5mm}
+    \item Gut abgegrenzte Aufgaben mit klarem Done-Kriterium
+    \item Fester Zyklus: \neustapill[font=\scriptsize\bfseries]{Erkunden}
+      \neustapill[font=\scriptsize\bfseries]{Planen}
+      \neustapill[font=\scriptsize\bfseries]{Umsetzen}
+      \neustapill[font=\scriptsize\bfseries]{Verifizieren}
+      \neustapill[font=\scriptsize\bfseries]{Committen}
+    \item Berechtigungen bewusst setzen: Sandbox, Freigaben für Shell und Netzwerk, keine Produktivzugänge
+    \item Werkzeuge über MCP anbinden, z.\,B. Ticketsystem, Doku, Datenbanken (lesend)
+    \item Parallelisieren in getrennten Worktrees und Ergebnisse wie fremde Pull Requests behandeln
+  \end{itemize}
+  \todo{Eigene Erfahrungen und Werkzeug-Setup ergänzen.}
+\end{frame}
+
+\begin{frame}{08 · Sicher und souverän arbeiten}{Ergänzung -- auf dem JFN kein eigenes Thema}
+  \vspace{3mm}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \begin{itemize}
+        \item \textbf{Daten:} keine Secrets und Kundendaten in Prompts, nur freigegebene Tools und Modelle
+        \item \textbf{Prompt Injection:} Tickets, Webseiten und Abhängigkeiten sind nicht vertrauenswürdige Eingaben
+        \item \textbf{Supply Chain:} halluzinierte Paketnamen und Lizenzen prüfen
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{itemize}
+        \item \textbf{Nachvollziehbarkeit:} KI-Beteiligung in Commits und Pull Requests kennzeichnen
+        \item \textbf{Regeln:} EU AI Act, interne KI-Richtlinie, Kundenverträge
+        \item \textbf{Souveränität:} Abhängigkeit von Anbietern bewusst steuern
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \todo{Interne KI-Richtlinie von team neusta verlinken.}
+\end{frame}
+
+{\neustastyle{green}
+\begin{frame}{Live-Demo: Vom Ticket zum Pull Request}
+  \vspace{10mm}
+  \centering
+  \neustapill{1 Kontext}\ \(\rightarrow\)\
+  \neustapill{2 Plan}\ \(\rightarrow\)\
+  \neustapill{3 Test}\ \(\rightarrow\)\
+  \neustapill{4 Umsetzung}\ \(\rightarrow\)\
+  \neustapill{5 Review}
+
+  \vspace{10mm}
+  \raggedright
+  \todo{Demo-Szenario festlegen (Java/Spring-Projekt), Backup-Video aufnehmen.}
+\end{frame}
+}
+
+% =============================================================================
+\section{Team und Organisation}
+% =============================================================================
+
+{\neustastyle{blue}
+\begin{frame}{Rollen verschieben sich}{Von \enquote{Ich implementiere ein Ticket} zu \dots}
+  \vspace{4mm}
+  \centering
+  \neustapill{Problem verstehen}\ \neustapill{Lösungsraum formen}\
+  \neustapill{Umsetzung kritisch prüfen}\ \neustapill{Ergebnis absichern}
+
+  \vspace{8mm}
+  {\bfseries Kernkompetenzen}\par\medskip
+  \neustapill{Architekturverständnis}\ \neustapill{Präzise Requirements}\ \neustapill{Kontextmodellierung}\par\smallskip
+  \neustapill{Fachliches Review}\ \neustapill{Verifikation}\ \neustapill{Kommunikation}\par\smallskip
+  \neustapill{Kritisches Denken}\ \neustapill{Übersetzen zwischen Fachlichkeit, Technik und Betrieb}
+  \neustasource{S.~Doemer, \enquote{Beyond Coding} (Abstract)}
+\end{frame}
+}
+
+\begin{frame}{Junior Devs ausbilden}{Zwischen Agents, Vibe und alten Tugenden}
+  \vspace{3mm}
+  \begin{itemize}
+    \setlength\itemsep{1.5mm}
+    \item Verstehen vor Übernehmen: Was ich nicht verstehe, kann ich nicht verantworten
+    \item Engineering-Grundlagen bewusst trainieren: TDD, CI/CD, Code Reviews
+    \item Lernmodus statt Delegationsmodus fördern
+    \item Tugenden, die keine KI übernimmt: Selbstorganisation, Verantwortung, im Team wachsen
+    \item Erfahrung teilen: Pairing, Reviews, Community
+  \end{itemize}
+  \vspace{3mm}
+  \alert{Offene Frage:} Wie entsteht ein gutes \enquote{System 1}, wenn die KI das Üben übernimmt?
+  \neustasource{K.~Mischok (Abstract), M.~Lippert (Folien), N.~Schöner (Abstract), O.~Zeigermann (Folien)}
+\end{frame}
+
+\begin{frame}{Der kritische Blick}
+  \vspace{3mm}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \textbf{Risiken}
+      \begin{itemize}
+        \item Folgen für Wirtschaft, Gesellschaft und Demokratie
+        \item KI als \enquote{großer Gleichmacher}: Mainstream, kein Geschmack
+        \item Cognitive Surrender: Vertrauen auch in falsche Antworten
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{Unsere Antwort}
+      \begin{itemize}
+        \item KI bewusst und begründet einsetzen
+        \item Wirkung an Qualität und Lieferfähigkeit messen, nicht an Codezeilen
+        \item Abhängigkeiten von Anbietern steuern
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \todo{Eigene Haltung / neusta-Position formulieren.}
+  \neustasource{J.~Schauder (Abstract), O.~Zeigermann (Folien), M.~Lippert (Folien)}
+\end{frame}
+
+% =============================================================================
+\section{Fazit}
+% =============================================================================
+
+\begin{frame}{Takeaways}
+  \vspace{4mm}
+  \begin{enumerate}
+    \setlength\itemsep{3mm}
+    \large
+    \item Verantwortung bleibt beim Menschen -- für jeden Commit.
+    \item Kontext und Spezifikation sind die neuen Kernkompetenzen.
+    \item Tests, Pipeline und Reviews sind der Maßstab für KI-Output.
+    \item Fast für Prototypen, slow für Produkte.
+    \item Denken nicht delegieren -- Erfahrung aufbauen und teilen.
+  \end{enumerate}
+\end{frame}
+
+\neustastatement[Nora Schöner, Opening Keynote, Java Forum Nord 2026]{Erfahrung lässt sich\\nicht prompten.}
+
+\neustaclosing{Vielen Dank!}{Fragen und Diskussion\par\medskip K.~Renken \textperiodcentered\ k.renken@neusta.de}
+
+% =============================================================================
+\appendix
+% =============================================================================
+
+\begin{frame}[fragile]{Quellen}{Java Forum Nord 2026, 22.09.2026, Hannover}
+  \footnotesize
+  \begin{itemize}
+    \setlength\itemsep{0.5mm}
+    \item Programm: \url{https://javaforumnord.de/2026/programm/}
+    \item N.~Schöner: Erfahrung lässt sich nicht prompten (Opening Keynote)
+    \item G.~Aschemann: The Excel Moment: AI for Legacy Architecture Analysis
+    \item M.~Lippert: Cognitive Debt -- Was KI mit unseren Köpfen macht \\
+      Folien: \url{https://speakerdeck.com/martinlippert/cognitive-debt-what-ai-will-do-to-us}
+    \item K.~Mischok: Ausbildung von Junior Devs im KI-Zeitalter
+    \item J.~Schauder: Wir werden von der KI \dots\ (Titel gekürzt)
+    \item S.~Doemer: Beyond Coding: Warum die Zukunft der Entwicklung im Kontext liegt
+    \item O.~Zeigermann: Developing Software Fast and Slow (Closing Keynote) --
+      \href{https://sessionize.com/download/vzamdeb~nB6quxB8wpBHQTCWSjFyjm.pdf~developing-software-fast-and-slow.pdf}{Folien}
+    \item M.~Landreh, L.~Eisbach: Code Reviews -- Wie man es so richtig falsch macht --
+      \href{https://sessionize.com/download/ihkazgen~SKRDVEEChEaba9yxiiTCRd.pdf~2026-09-22-codereviews-nationalpark-mit-lena_v2_folienhandout.pdf}{Handout}
+    \item R.~Fichtner: Java 2026: So startest du (wieder) richtig durch --
+      \href{https://sessionize.com/download/ylardeu~V4xw3vagVbauNJfb8a6QTJ.pdf~restart-java-2026-java-forum-nord.pdf}{Folien}
+    \item F.~Hahne: Hey Mr.\ TamboU(r)Ine man, create a TUI for me
+  \end{itemize}
+\end{frame}
+
+\end{document}

@@ -1,0 +1,314 @@
+% =============================================================================
+%  beamerthemeneusta.sty – Beamer-Theme im Stil der team-neusta-Präsentationen
+%
+%  Abgeleitet aus teamneusta_Unternehmenspraese-englisch.pdf:
+%    * 16:9, dunkelblauer Grund (#000050), Akzente Neongrün (#AAFF00),
+%      Blau (#0000AF), Magenta (#FF00FF) und Lila
+%    * Überschriften in Versalien, Arial/Helvetica
+%    * Logo-Signet oben rechts, abgerundete „Pill“-Tags, weiße Karten
+%    * Sonderfolien: Titel (geteilt), Kapitel (grüne Blob-Grafik),
+%      Statement und Abschluss (Magenta-Welle)
+%
+%  Verwendung:  \usetheme[<optionen>]{neusta}
+%    final            TODO-Platzhalter (\todo{...}) ausblenden
+%    nosectionpages   keine automatischen Kapitelfolien bei \section
+%    assets=<pfad>    Verzeichnis mit Logo und Hintergründen (Standard: assets)
+%
+%  Kompilieren: lualatex/xelatex (nutzt Arial, falls installiert) oder pdflatex
+%  (nutzt Helvetica-Klon). Mehr dazu in praesentation.tex.
+% =============================================================================
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerthemeneusta}[2026/10/19 v0.1 team neusta Beamer-Theme]
+
+\RequirePackage{iftex}
+\RequirePackage{amssymb}
+\RequirePackage{tikz}
+\usetikzlibrary{calc,positioning,shapes.misc}
+
+% -----------------------------------------------------------------------------
+%  Optionen
+% -----------------------------------------------------------------------------
+\newif\ifneusta@draft          \neusta@drafttrue
+\newif\ifneusta@sectionpages   \neusta@sectionpagestrue
+\def\neusta@assets{assets/}
+
+\DeclareOptionBeamer{final}{\neusta@draftfalse}
+\DeclareOptionBeamer{nosectionpages}{\neusta@sectionpagesfalse}
+\DeclareOptionBeamer{assets}{\def\neusta@assets{#1/}}
+\ProcessOptionsBeamer
+
+% -----------------------------------------------------------------------------
+%  Farben (aus der Unternehmenspräsentation extrahiert)
+% -----------------------------------------------------------------------------
+\definecolor{neustaNavy}{HTML}{000050}
+\definecolor{neustaBlue}{HTML}{0000AF}
+\definecolor{neustaGreen}{HTML}{AAFF00}
+\definecolor{neustaMagenta}{HTML}{FF00FF}
+\definecolor{neustaPurple}{HTML}{8F1AF5}
+
+% -----------------------------------------------------------------------------
+%  Schrift: Arial wie in der Vorlage, sonst Helvetica-Klon
+% -----------------------------------------------------------------------------
+\ifPDFTeX
+  \RequirePackage[T1]{fontenc}
+  \RequirePackage[scaled=0.95]{helvet}
+\else
+  \RequirePackage{fontspec}
+  \IfFontExistsTF{Arial}{\setsansfont{Arial}}{\setsansfont{TeX Gyre Heros}}
+\fi
+\usefonttheme{professionalfonts}
+\RequirePackage{url}
+\urlstyle{same}
+
+\setbeamerfont{frametitle}{size=\Large}
+\setbeamerfont{framesubtitle}{size=\normalsize}
+\setbeamerfont{footline}{size=\tiny}
+\setbeamerfont{block title}{size=\normalsize,series=\bfseries}
+\setbeamerfont{section in toc}{size=\large}
+
+% -----------------------------------------------------------------------------
+%  Farbstile: navy (Standard), blue, green, purple
+%  Für einzelne Folien in einer Gruppe verwenden:
+%    {\neustastyle{green}
+%     \begin{frame}{...} ... \end{frame}}
+% -----------------------------------------------------------------------------
+\newcommand\neusta@defstyle[9]{%
+  \expandafter\def\csname neusta@style@#1\endcsname{%
+    \colorlet{neusta@bg}{#2}%       Hintergrund
+    \colorlet{neusta@fg}{#3}%       Fließtext
+    \colorlet{neusta@title}{#4}%    Folientitel
+    \colorlet{neusta@accent}{#5}%   Aufzählungszeichen, Struktur, Tags
+    \colorlet{neusta@accentii}{#6}% zweite Ebene, \alert
+    \colorlet{neusta@block}{#7}%    Hintergrund von Blöcken
+    \colorlet{neusta@logo}{#8}%     Signet oben rechts
+    \colorlet{neusta@todo}{#9}%     TODO-Platzhalter
+    \neusta@applystyle}}
+%                 name    bg            fg          title         accent        accentii       block        logo        todo
+\neusta@defstyle{navy}  {neustaNavy}  {white}     {neustaGreen} {neustaGreen} {neustaMagenta}{neustaBlue} {white}     {neustaMagenta}
+\neusta@defstyle{blue}  {neustaBlue}  {white}     {white}       {neustaGreen} {neustaGreen}  {neustaNavy} {white}     {neustaMagenta}
+\neusta@defstyle{green} {neustaGreen} {neustaBlue}{neustaBlue}  {neustaBlue}  {neustaNavy}   {white}      {neustaBlue}{neustaNavy}
+\neusta@defstyle{purple}{neustaPurple}{white}     {white}       {neustaGreen} {neustaGreen}  {neustaNavy} {white}     {neustaGreen}
+
+\newcommand\neusta@applystyle{%
+  \setbeamercolor{background canvas}{bg=neusta@bg}%
+  \setbeamercolor{normal text}{fg=neusta@fg,bg=neusta@bg}%
+  \setbeamercolor{structure}{fg=neusta@accent}%
+  \setbeamercolor{frametitle}{fg=neusta@title}%
+  \setbeamercolor{framesubtitle}{fg=neusta@fg}%
+  \setbeamercolor{title}{fg=neusta@title}%
+  \setbeamercolor{item}{fg=neusta@accent}%
+  \setbeamercolor{subitem}{fg=neusta@accentii}%
+  \setbeamercolor{alerted text}{fg=neusta@accentii}%
+  \setbeamercolor{example text}{fg=neusta@accent}%
+  \setbeamercolor{block title}{fg=neusta@accent,bg=neusta@block}%
+  \setbeamercolor{block body}{fg=neusta@fg,bg=neusta@block}%
+  \setbeamercolor{block title alerted}{fg=white,bg=neustaMagenta}%
+  \setbeamercolor{block body alerted}{fg=neusta@fg,bg=neusta@block}%
+  \setbeamercolor{block title example}{fg=neustaBlue,bg=neustaGreen}%
+  \setbeamercolor{block body example}{fg=neusta@fg,bg=neusta@block}%
+  \setbeamercolor{footline}{fg=neusta@fg!55!neusta@bg}%
+  \usebeamercolor[fg]{normal text}}
+\newcommand\neustastyle[1]{\csname neusta@style@#1\endcsname}
+\neustastyle{navy}
+
+% -----------------------------------------------------------------------------
+%  Logo und Signet (Vektordaten, übernehmen die aktuelle Textfarbe)
+% -----------------------------------------------------------------------------
+\newcommand\neusta@vector[2]{%
+  \resizebox{!}{#2}{\tikz[x=1pt,y=1pt]{\input{\neusta@assets#1.tikz}}}}
+\newcommand\neustalogo[1][7mm]{\neusta@vector{neusta-logo}{#1}}
+\newcommand\neustaicon[1][5.3mm]{\neusta@vector{neusta-icon}{#1}}
+
+% -----------------------------------------------------------------------------
+%  Seitenaufbau
+% -----------------------------------------------------------------------------
+\setbeamersize{text margin left=10mm,text margin right=10mm}
+\setbeamertemplate{navigation symbols}{}
+
+% Hintergrund: optionales Vollbild plus Signet oben rechts
+\newif\ifneusta@icon \neusta@icontrue
+\def\neusta@bgimage{}
+\newcommand\neusta@fullimage[1]{%
+  \includegraphics[width=\paperwidth,height=\paperheight]{\neusta@assets#1}}
+\setbeamertemplate{background}{%
+  \begin{tikzpicture}
+    \useasboundingbox (0,0) rectangle (\paperwidth,\paperheight);
+    \ifx\neusta@bgimage\@empty\else
+      \node[anchor=south west,inner sep=0] at (0,0) {\neusta@fullimage{\neusta@bgimage}};
+    \fi
+    \ifneusta@icon
+      \node[anchor=north east,inner sep=0,text=neusta@logo]
+        at (\paperwidth-9mm,\paperheight-6mm) {\neustaicon};
+    \fi
+  \end{tikzpicture}}
+
+% Folientitel: Versalien, links oben, Platz für das Signet
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip\vskip7mm
+  \begin{beamercolorbox}[wd=\paperwidth,leftskip=\beamer@leftmargin,rightskip=22mm plus 1fill]{frametitle}%
+    \usebeamerfont{frametitle}\MakeUppercase{\insertframetitle}\par
+    \ifx\beamer@framesubtitle\@empty\else
+      \vskip1.5mm
+      {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\insertframesubtitle\par}%
+    \fi
+  \end{beamercolorbox}%
+  \vskip2mm}
+
+% Fußzeile: Kurztitel links, Foliennummer rechts
+\setbeamertemplate{footline}{%
+  \usebeamerfont{footline}\usebeamercolor[fg]{footline}%
+  \hbox to\paperwidth{%
+    \hskip\beamer@leftmargin
+    team neusta\ifx\beamer@shorttitle\@empty\else\enspace|\enspace\insertshorttitle\fi
+    \hfill\insertframenumber
+    \hskip\beamer@rightmargin}%
+  \vskip4mm}
+
+% -----------------------------------------------------------------------------
+%  Innere Elemente
+% -----------------------------------------------------------------------------
+\setbeamertemplate{itemize item}{\tikz[baseline=-0.55ex]\fill (0,0) circle (0.24em);}
+\setbeamertemplate{itemize subitem}{\textendash}
+\setbeamertemplate{itemize subsubitem}{\textendash}
+\setbeamertemplate{enumerate item}{\textbf{\insertenumlabel.}}
+\setbeamertemplate{enumerate subitem}{\textbf{\insertenumlabel.\insertsubenumlabel}}
+\setlength{\leftmargini}{1.4em}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+% Inhaltsverzeichnis / Agenda: „01  Kapitel“
+\newcommand\neusta@twodigit[1]{\ifnum#1<10 0\fi#1}
+\setbeamertemplate{section in toc}{%
+  \leavevmode
+  \hbox to2.2em{\color{neusta@accent}\bfseries\neusta@twodigit{\inserttocsectionnumber}\hss}%
+  \inserttocsection\par}
+\setbeamertemplate{subsection in toc}{%
+  \leavevmode\hskip2.2em{\small\color{neusta@fg!70!neusta@bg}\inserttocsubsection}\par}
+
+% -----------------------------------------------------------------------------
+%  Bausteine
+% -----------------------------------------------------------------------------
+% Pill-Tag wie „AI Systems“ in der Vorlage:  \neustapill[tikz-optionen]{Text}
+% Der TikZ-Stil „neusta pill“ steht auch für eigene Grafiken zur Verfügung.
+\tikzset{neusta pill/.style={rounded rectangle,draw=neusta@accent,line width=0.7pt,
+  fill=neusta@bg,text=neusta@fg,font=\small\bfseries,
+  inner xsep=2.4mm,inner ysep=1.1mm,text height=1.6ex,text depth=0.3ex}}
+\newcommand\neustapill[2][]{%
+  \tikz[baseline=(pill.base)]\node[neusta pill,#1] (pill) {#2};}
+
+% Karte mit Titel, weiß gefüllt oder nur umrandet:
+%   \neustacard[tikz-optionen]{Titel}{Text}
+%   \neustaoutlinecard[tikz-optionen]{Titel}{Text}
+\tikzset{neusta card/.style={rounded corners=2.5mm,inner sep=2.5mm,
+  text width=0.27\textwidth,minimum height=3.2cm,align=left,anchor=north,font=\scriptsize}}
+\newcommand\neustacard[3][]{%
+  \tikz[baseline=(card.north)]
+    \node[neusta card,fill=white,text=neustaNavy,#1]
+      (card) {{\small\bfseries\color{neustaBlue}#2\par}\smallskip#3\par};}
+\newcommand\neustaoutlinecard[3][]{%
+  \tikz[baseline=(card.north)]
+    \node[neusta card,draw=neusta@accent,line width=0.7pt,text=neusta@fg,#1]
+      (card) {{\small\bfseries\color{neusta@accent}#2\par}\smallskip#3\par};}
+
+% Häkchen und Kreuz für Gegenüberstellungen
+\newcommand\neustayes{\leavevmode{\color{neusta@accent}\ensuremath{\checkmark}}}
+\newcommand\neustano{\leavevmode{\color{neustaMagenta}\ensuremath{\times}}}
+
+% Kennzahl:  \neustakpi{850}{Mitarbeitende}
+\newcommand\neustakpi[2]{%
+  \begin{tabular}{@{}c@{}}
+    {\fontsize{26}{30}\selectfont\bfseries\color{neusta@fg}#1}\\[1mm]
+    {\small\color{neusta@fg}#2}
+  \end{tabular}}
+
+% Zitat:  \neustaquote{Text}{Quelle}
+\newcommand\neustaquote[2]{%
+  \begin{tikzpicture}
+    \node[text width=0.82\textwidth,align=left,inner sep=0,font=\large] (q) {#1};
+    \node[anchor=north east,inner sep=0,font=\fontsize{60}{60}\selectfont\bfseries,
+          text=neusta@accent] at ([xshift=-3mm,yshift=4mm]q.north west) {\textquotedblleft};
+    \node[anchor=north west,inner sep=0,font=\small,text=neusta@accent]
+      at ([yshift=-3mm]q.south west) {\textendash\ #2};
+  \end{tikzpicture}}
+
+% Quellenangabe am Folienende:  \neustasource{...}
+\newcommand\neustasource[1]{%
+  \par\vfill{\tiny\color{neusta@fg!65!neusta@bg}Quelle: #1\par}}
+
+% Platzhalter für den Entwurf (mit Theme-Option „final“ ausgeblendet)
+\newcommand\neustatodo[1]{%
+  \ifneusta@draft{\par\smallskip\scriptsize\color{neusta@todo}\textbf{TODO:}~#1\par}\fi}
+\providecommand\todo{\neustatodo}
+
+% -----------------------------------------------------------------------------
+%  Sonderfolien
+% -----------------------------------------------------------------------------
+% Geteilte Titelfolie wie Seite 1 der Vorlage. Rechte Hälfte:
+%   \neustatitleimage{datei}  (Standard: Lila-Grafik aus der Vorlage)
+\def\neusta@titleimage{\neusta@assets bg-purple}
+\newcommand\neustatitleimage[1]{\def\neusta@titleimage{#1}}
+\newlength\neusta@titlewidth
+\newcommand\neustatitleframe{%
+  {\neustastyle{navy}\neusta@iconfalse
+   \setlength\neusta@titlewidth{\dimexpr.5\paperwidth-20mm\relax}%
+   \setbeamertemplate{background}{%
+     \begin{tikzpicture}
+       \useasboundingbox (0,0) rectangle (\paperwidth,\paperheight);
+       \begin{scope}
+         \clip (.5\paperwidth,0) rectangle (\paperwidth,\paperheight);
+         \node[inner sep=0] at (.75\paperwidth,.5\paperheight)
+           {\includegraphics[height=\paperheight]{\neusta@titleimage}};
+       \end{scope}
+       \node[anchor=north west,inner sep=0,text=white] at (9mm,\paperheight-5mm) {\neustalogo};
+       \node[anchor=south west,inner sep=0,text width=\neusta@titlewidth,align=left,
+             text=neustaGreen,font=\fontsize{22}{26}\selectfont] (title)
+         at (9mm,.5\paperheight) {\MakeUppercase{\inserttitle}};
+       \node[anchor=north west,inner sep=0,text width=\neusta@titlewidth,align=left,
+             text=white,font=\large,
+             execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000}] (subtitle)
+         at ([yshift=-5mm]title.south west) {\insertsubtitle};
+       \node[anchor=south west,inner sep=0,text width=\neusta@titlewidth,align=left,
+             text=white,font=\scriptsize]
+         at (9mm,7mm) {\insertauthor\par\smallskip\insertdate};
+     \end{tikzpicture}}%
+   \begin{frame}[plain]\end{frame}}}
+
+% Kapitelfolie (grüne Blob-Grafik), automatisch bei \section
+\newcommand\neusta@sectionframe{%
+  {\neustastyle{green}\neusta@iconfalse\def\neusta@bgimage{bg-green}%
+   \begin{frame}[plain,c,noframenumbering]
+     \vspace*{8mm}
+     \centering
+     {\large\bfseries\neusta@twodigit{\insertsectionnumber}\par}\medskip
+     {\fontsize{24}{29}\selectfont\MakeUppercase{\insertsectionhead}\par}
+   \end{frame}}}
+\AtBeginSection{\ifneusta@sectionpages\neusta@sectionframe\fi}
+
+% Statement-Folie (Magenta-Welle):  \neustastatement[Urheber:in]{Aussage}
+\newcommand\neustastatement[2][]{%
+  {\neustastyle{navy}\neusta@iconfalse\def\neusta@bgimage{bg-wave}%
+   \begin{frame}[plain,c]
+     \vspace*{-18mm}
+     \centering
+     {\fontsize{22}{27}\selectfont\color{neustaGreen}\MakeUppercase{#2}\par}
+     \ifx\relax#1\relax\else\bigskip{\small\color{white}#1\par}\fi
+   \end{frame}}}
+
+% Abschlussfolie wie die letzte Seite der Vorlage:
+%   \neustaclosing{Großer Text}{Kontakt / Zusatz}
+\newcommand\neustaclosing[2]{%
+  {\neustastyle{navy}\neusta@iconfalse
+   \setbeamertemplate{background}{%
+     \begin{tikzpicture}
+       \useasboundingbox (0,0) rectangle (\paperwidth,\paperheight);
+       \node[anchor=south west,inner sep=0] at (0,0) {\neusta@fullimage{bg-wave}};
+       \node[anchor=north west,inner sep=0,text=white]
+         (logo) at (.26\paperwidth,.78\paperheight) {\neustalogo[8mm]};
+       \node[anchor=north west,inner sep=0,text width=.6\paperwidth,align=left,
+             text=neustaGreen,font=\fontsize{30}{33}\selectfont\bfseries]
+         (claim) at ([yshift=-6mm]logo.south west) {\MakeUppercase{#1}};
+       \node[anchor=north west,inner sep=0,text width=.6\paperwidth,align=left,
+             text=white,font=\small] at ([yshift=-5mm]claim.south west) {#2};
+     \end{tikzpicture}}%
+   \begin{frame}[plain]\end{frame}}}
+
+\endinput
